@@ -52,14 +52,16 @@ curl -sfL https://get.k3s.io | sh -s - --no-deploy traefik
 ```
 > full documentation for the setup options of a master node is available [here](https://rancher.com/docs/k3s/latest/en/installation/install-options/server-config/)
 
-## Nginx Ingress controller setup
-
-### Optional
-
-To install the Nginx Ingress controller we will use `helm` because it's more versatile and provides a lot of customizability.
-To install the helm cli (if you don't have it already) simply run:
+To verify that your cluster is up and running, now you can run:
 
 ```console
+kubectl get node
+```
 
+The output of the command should be something like:
+
+```console
+NAME           STATUS   ROLES    AGE   VERSION
+raspberrypi    Ready    master   12s   v1.19.5+k3s2
 ```
 
