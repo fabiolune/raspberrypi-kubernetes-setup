@@ -14,6 +14,29 @@ The minimal setup is based on:
 
 The plan is to extend this list to include tools for monitoring, logging and other functionalities.
 
+## Initial setup
+
+To work with kubernetes we will need some cli tools to interact with our clusters.
+Some of them are:
+- kubectl
+- helm
+
+A fantastic way to install different clis is provided by [arkade](https://github.com/alexellis/arkade), a tool created by Alex Ellis.
+To install `arkade` simply run:
+
+```console
+curl -sLS https://dl.get-arkade.dev | sudo sh
+```
+
+When arkade setup is done, to install kubectl and helm you simply need to run:
+
+```console
+ark install kybectl
+ark install helm
+```
+> ark is a handy alias of arkade
+
+
 ## Setting up k3s
 
 The easiest way to install k3s is to run the following command:
@@ -29,3 +52,13 @@ curl -sfL https://get.k3s.io | sh -s - --no-deploy traefik
 ```
 > full documentation for the setup options of a master node is available [here](https://rancher.com/docs/k3s/latest/en/installation/install-options/server-config/)
 
+## Nginx Ingress controller setup
+
+### Optional
+
+To install the Nginx Ingress controller we will use `helm` because it's more versatile and provides a lot of customizability.
+To install the helm cli (if you don't have it already) simply run:
+
+```console
+
+```
