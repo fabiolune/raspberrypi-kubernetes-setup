@@ -31,7 +31,7 @@ curl -sLS https://dl.get-arkade.dev | sudo sh
 When arkade setup is done, to install kubectl and helm you simply need to run:
 
 ```console
-ark install kybectl
+ark install kubectl
 ark install helm
 ```
 > ark is a handy alias of arkade
@@ -62,3 +62,4 @@ To install the helm cli (if you don't have it already) simply run:
 ```console
 
 ```
+
