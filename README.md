@@ -13,3 +13,19 @@ The minimal setup is based on:
 - [cert-manager](https://cert-manager.io/)
 
 The plan is to extend this list to include tools for monitoring, logging and other functionalities.
+
+## Setting up k3s
+
+The easiest way to install k3s is to run the following command:
+```console
+curl -sfL https://get.k3s.io | sh -
+```
+
+This will create your master node, setup a systemctl service, create a kubectl configuration file and some shell scripts that can be used to stop it and/or uninstall it.
+Nevertheless, this simple setup also deploys the default ingress controller (traefik), but since I decided to go with nginx, it is possible to change the setup command in:
+
+```console
+curl -sfL https://get.k3s.io | sh -s - --no-deploy traefik
+```
+> full documentation for the setup options of a master node is available [here](https://rancher.com/docs/k3s/latest/en/installation/install-options/server-config/)
+
