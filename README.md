@@ -107,6 +107,34 @@ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
 
 With this set of values the ingress controller will be deployed on the kubernetes cluster, the controller pods will be scheduled on the node labeled with `external-exposed=true`, will be exposed with a service of type NodePort on the ports 30080 (http) and 30443 (https), will preserve the source IP thanks to the `externalTrafficPolicy` and will have a default backend with a dedicated arm image for all the requests that do not match any ingress definition.
 
+To check the availability of the ingress controller:
+
+```console
+kubectl get pod
+```
+
+The output should be something similar to:
+
+```console
+NAME                                            READY   STATUS    RESTARTS   AGE
+ingress-nginx-defaultbackend-6b59ff499f-5dhjx   1/1     Running   0          15s
+ingress-nginx-controller-f5b8f5b4-s6q6z         1/1     Running   0          15s
+```
+
+Now, since no ingress resources are defined for any backend, every http request (to the node port 30080 as defined in the helm deploy) to the ingress entrypoint will return a 404 (except `/healthz`). The request `curl -i http://localhost:30080/whatever`will give something like:
+
+```console
+HTTP/1.1 404 Not Found
+Date: Thu, 07 Jan 2021 22:43:44 GMT
+Content-Type: text/plain; charset=utf-8
+Content-Length: 21
+Connection: keep-alive
+
+default backend - 404
+```
+
+The same is also true for https requests on the port 30443 (now we need to accept insecure connections with `-k` because we did not provide any tls certificate) of the form `curl -ik https://localhost:30443/whatever`
+
 
 
 
