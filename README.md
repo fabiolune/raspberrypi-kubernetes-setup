@@ -10,7 +10,7 @@ This repo contains the bare minimum components to have a kubernetes cluster up &
 The minimal setup is based on:
 - [k3s](https://k3s.io/): a lightweight kubernetes distribution
 - [nginx ingress controller](https://kubernetes.github.io/ingress-nginx/)
-- [cert-manager](https://cert-manager.io/)
+- [cert-manager](https://cert-manager.io/) to manage tls certificates generation
 
 The plan is to extend this list to include tools for monitoring, logging and other functionalities.
 
