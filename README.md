@@ -147,8 +147,4 @@ The same is also true for https requests on the port 30443 (now we need to accep
 
 ---
 
-__Table of contents__
-
-[TOC]
-
 [^1]:https://kubernetes.github.io/ingress-nginx/deploy
