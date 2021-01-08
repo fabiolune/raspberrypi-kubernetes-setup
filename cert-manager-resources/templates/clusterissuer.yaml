@@ -1,0 +1,29 @@
+apiVersion: cert-manager.io/v1alpha2
+kind: ClusterIssuer
+metadata:
+{{ if eq .Values.clusterIssuer.type "prod" }}
+  name: letsencrypt-prod
+{{ else }}
+  name: letsencrypt-stag
+{{ end }}
+spec:
+  acme:
+{{ if eq .Values.clusterIssuer.type "prod" }}
+    server: https://acme-v02.api.letsencrypt.org/directory 
+{{ else }}
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+{{ end }}
+{{ if .Values.acme.email }}
+    email: {{ .Values.acme.email }}
+{{ end }}
+    privateKeySecretRef:
+{{ if eq .Values.clusterIssuer.type "prod" }}
+      name: letsencrypt-prod
+{{ else }}
+      name: letsencrypt-stag
+{{ end }}
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+

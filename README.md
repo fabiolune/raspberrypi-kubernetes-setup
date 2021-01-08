@@ -183,8 +183,16 @@ spec:
           class: nginx
 ```
 
+These steps can be simplified using the attached helm chart; in particular you need to define the hostname for which you require the certificate, the secret where the resulting certificate will be saved and the email for the certificate request:
 
+```console
+helm upgrade --install --debug --dry-run test-cert-manager-resources . \
+    --set tls.hostname=<your.domain.name> \
+    --set tls.secret.prefix=<prefix-for -secret-name> \
+    --set clusterIssuer.type=prod
+```
 
+If `clusterIssuer.type` is not specified, or in general is different from `prod`, the staging letsencrypt cluster issuer wil be used (it's a good practice to use it until you are sure that the final certificate gets actually created because the staging instance has higher rate limits)
 
 
 
