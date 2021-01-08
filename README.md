@@ -160,7 +160,30 @@ helm upgrade --install cert-manager jetstack/cert-manager \
 	--set installCRDs=true
 ```
 
-To be able to generate ACME certificates with _Let's Encrypt_, we need to have a ClusterIssuer (or issuer, the difference is that an Issuer is bound to a namespace) resource on our cluster; 
+To be able to generate ACME certificates with _Let's Encrypt_, we need to have a ClusterIssuer (or issuer, the difference is that an Issuer is bound to a namespace) resource on the cluster:
+
+```console
+apiVersion: cert-manager.io/v1alpha2
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    # The ACME server URL
+    server: https://acme-v02.api.letsencrypt.org/directory
+    # Email address used for ACME registration
+    email: fabiolune@gmail.com
+    # Name of a secret used to store the ACME account private key
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    # Enable the HTTP-01 challenge provider
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+```
+
+
 
 
 
