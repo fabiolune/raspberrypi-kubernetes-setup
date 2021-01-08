@@ -63,12 +63,8 @@ export KUBECONFIG=${HOME}/.kube/k3s-config
 To verify that your cluster is up and running, now you can run:
 
 ```console
-kubectl get node
-```
+$ kubectl get node
 
-The output of the command should be something like:
-
-```console
 NAME           STATUS   ROLES    AGE   VERSION
 raspberrypi    Ready    master   12s   v1.19.5+k3s2
 ```
@@ -112,23 +108,19 @@ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
 	--set defaultBackend.image.repository=k8s.gcr.io/defaultbackend-arm
 ```
 
-With this set of values the ingress controller will be deployed on the kubernetes cluster, the controller pods will be scheduled on the node labeled with `external-exposed=true`, will be exposed with a service of type NodePort on the ports 30080 (http) and 30443 (https), will preserve the source IP thanks to the `externalTrafficPolicy` and will have a default backend with a dedicated arm image for all the requests that do not match any ingress definition.
+With this set of values the ingress controller will be deployed on the kubernetes cluster, the controller pods will be scheduled on the node labeled with `external-exposed=true`, will be exposed with a service of type NodePort on the ports 30080 (http) and 30443 (https), will preserve the source IP thanks to the `externalTrafficPolicy` and will have a default backend with a dedicated arm image (the default backend image is not multi architecture, a specific tag is required) for all the requests that do not match any ingress definition.
 
-To check the availability of the ingress controller:
-
-```console
-kubectl get pod
-```
-
-The output should be something similar to:
+To check the availability of the ingress controller you should see something similar to:
 
 ```console
+$ kubectl get pod
+
 NAME                                            READY   STATUS    RESTARTS   AGE
 ingress-nginx-defaultbackend-6b59ff499f-5dhjx   1/1     Running   0          15s
 ingress-nginx-controller-f5b8f5b4-s6q6z         1/1     Running   0          15s
 ```
 
-Now, since no ingress resources are defined for any backend, every http request (to the node port 30080 as defined in the helm deploy) to the ingress entrypoint will return a 404 (except `/healthz`). The request `curl -i http://localhost:30080/whatever`will give something like:
+Now, since no ingress resources are defined for any backend, every http request (to the node port 30080 as defined in the helm deploy) to the ingress entry-point will return a 404 (except `/healthz`). The request `curl -i http://localhost:30080/whatever`will give something like:
 
 ```console
 HTTP/1.1 404 Not Found
@@ -142,9 +134,33 @@ default backend - 404
 
 The same is also true for https requests on the port 30443 (now we need to accept insecure connections with `-k` because we did not provide any tls certificate) of the form `curl -ik https://localhost:30443/whatever`
 
+## Install cert manager
 
+The cert manager setup is done directly following the approach suggested in the official [documentation](https://cert-manager.io/docs/).
 
+First we need a dedicated namespace:
 
+```console
+kubectl create ns cert-manager
+```
+
+Then we need to add the cert manager helm repository:
+
+```console
+helm repo add jetstack https://charts.jetstack.io
+helm repo update
+```
+
+Finally we can deploy it:
+
+```console
+helm upgrade --install cert-manager jetstack/cert-manager \
+	--namespace cert-manager \
+	--version v1.1.0 \
+	--set installCRDs=true
+```
+
+To be able to generate ACME certificates with _Let's Encrypt_, we need to have a ClusterIssuer (or issuer, the difference is that an Issuer is bound to a namespace) resource on our cluster; 
 
 
 
