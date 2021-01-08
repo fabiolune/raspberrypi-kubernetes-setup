@@ -1,5 +1,8 @@
 #!/bin/sh
 
+hostname=$1
+secretPrefix=$2
+
 # Install arkade
 curl -sLS https://dl.get-arkade.dev | sudo sh
 
@@ -34,3 +37,23 @@ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
 	--set controller.service.externalTrafficPolicy=Local \
 	--set defaultBackend.enabled=true \
 	--set defaultBackend.image.repository=k8s.gcr.io/defaultbackend-arm
+
+# create cert-manager namespace
+kubectl create ns cert-manager
+
+# configure jetstack helm repo
+helm repo add jetstack https://charts.jetstack.io
+helm repo update
+
+# deploy cert manager with CRDs
+helm upgrade --install cert-manager jetstack/cert-manager \
+        --namespace cert-manager \
+        --version v1.1.0 \
+        --set installCRDs=true
+
+# TODO: make this step conditiona, only when both hostname and secretPrefix are present
+# install cert manager resources (cluster issuer and certificate request)
+helm upgrade --install cert-manager-resources ./cert-manager-resources \
+    --set tls.hostname=$hostname \
+    --set tls.secret.prefix=$secretPrefix \
+    --set clusterIssuer.type=prod
