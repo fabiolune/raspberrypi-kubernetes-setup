@@ -186,9 +186,9 @@ spec:
 These steps can be simplified using the attached helm chart; in particular you need to define the hostname for which you require the certificate, the secret where the resulting certificate will be saved and the email for the certificate request:
 
 ```console
-helm upgrade --install --debug --dry-run cert-manager-resources ./cert-manager-resources \
+helm upgrade --install cert-manager-resources ./cert-manager-resources \
     --set tls.hostname=<your.domain.name> \
-    --set tls.secret.prefix=<prefix-for -secret-name> \
+    --set tls.secret.prefix=<prefix-for-secret-name> \
     --set clusterIssuer.type=prod
 ```
 
