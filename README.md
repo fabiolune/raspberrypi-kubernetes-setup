@@ -192,7 +192,7 @@ helm upgrade --install cert-manager-resources ./cert-manager-resources \
     --set clusterIssuer.type=prod
 ```
 
-If `clusterIssuer.type` is not specified, or in general is different from `prod`, the staging letsencrypt cluster issuer wil be used (it's a good practice to use it until you are sure that the final certificate gets actually created because the staging instance has higher rate limits)
+If `clusterIssuer.type` is not specified, or in general is different from `prod`, the staging _Let's Encrypt_ cluster issuer will be used (it's a good practice to use it until you are sure that the final certificate gets actually created because the staging instance has higher rate limits)
 
 
 
