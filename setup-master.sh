@@ -45,15 +45,10 @@ kubectl create ns cert-manager
 helm repo add jetstack https://charts.jetstack.io
 helm repo update
 
-# deploy cert manager with CRDs
-helm upgrade --install cert-manager jetstack/cert-manager \
-        --namespace cert-manager \
-        --version v1.1.0 \
-        --set installCRDs=true
-
-# TODO: make this step conditiona, only when both hostname and secretPrefix are present
 # install cert manager resources (cluster issuer and certificate request)
 helm upgrade --install cert-manager-resources ./cert-manager-resources \
+	--create-namespace cert-manager
     --set tls.hostname=$hostname \
     --set tls.secret.prefix=$secretPrefix \
     --set clusterIssuer.type=prod
+	--set installCRDs=true

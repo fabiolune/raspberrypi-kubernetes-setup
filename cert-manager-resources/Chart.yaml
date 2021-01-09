@@ -1,5 +1,19 @@
 apiVersion: v2
-appVersion: 0.1.0
-description: Helm chart for cert manager resources
 name: cert-manager-resources
 version: 0.1.0
+description: Helm chart for cert manager resources
+appVersion: 0.1.0
+
+home: "https://github.com/fabiolune/raspberrypi-kubernetes-setup"
+sources:
+  - "https://github.com/fabiolune/raspberrypi-kubernetes-setup"
+
+maintainers: # (optional)
+  - name: fabiolune
+    email: fabiolune@gmail.com
+    url: "https://github.com/fabiolune/"
+
+dependencies:
+- name: cert-manager
+  version: "1.1.0"
+  repository: "https://charts.jetstack.io"
