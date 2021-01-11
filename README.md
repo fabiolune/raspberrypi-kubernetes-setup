@@ -182,7 +182,7 @@ helm upgrade --install cert-manager jetstack/cert-manager \
 	--wait
 ```
 
-> the `--wait` option helps having the resources ready for the following steps
+> the `--wait` option helps having the resources ready for the next steps
 
 To be able to generate ACME certificates with _Let's Encrypt_, we need to have a __ClusterIssuer__ (or issuer, the difference is that an Issuer is bound to a namespace) resource on the cluster (see full documentation [here](https://cert-manager.io/docs/concepts/issuer/)).
 
@@ -197,8 +197,6 @@ To simplify the delivery of both _Let's Encrypt_ __ClusterIssuers__ and addition
     --set email=<email used for ACME registration> \
     --wait
   ```
-
-  
 
 - certificate-request:
 
