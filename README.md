@@ -259,7 +259,7 @@ raspberrypi2   Ready    <none>   42s    v1.19.5+k3s2
 In some k3s versions the role of the worker node is not defined ("<none>"); to fix that it is possible to run:
 
 ```console
-kubectl label node {name of the worker node} node-role.kubernetes.io/worker=worker
+kubectl label node <name of the worker node> node-role.kubernetes.io/worker=worker
 ```
 
 ## Further readings
