@@ -1,13 +1,15 @@
-# Why
+# Kubernetes setup on a raspberry pi cluster
+
+## Why
 
 There are many resources that can help you setting up a kubernetes cluster on a Raspberry Pi, but many of them only focus on some specific aspects.
 The idea of this repo is to try to collect all the aspects of a decent kubernetes setup for a Raspberry Pi, from dedicated considerations on the ARM architecture, to some basic networking aspects of a home made cluster.
 
-# What
+## What
 
-This repo contains the bare minimum components to have a kubernetes cluster up & running on my raspberry pi(s).
+This repo contains a minimum set of components to have a kubernetes cluster up & running on a raspberry pi(s).
 
-The minimal setup is based on:
+The setup is based on:
 - [k3s](https://k3s.io/): a lightweight kubernetes distribution
 - [nginx ingress controller](https://kubernetes.github.io/ingress-nginx/)
 - [cert-manager](https://cert-manager.io/) to manage tls certificates generation
@@ -18,10 +20,11 @@ The plan is to extend this list to include tools for monitoring, logging and oth
 
 To work with kubernetes we will need some cli tools to interact with our clusters.
 Some of them are:
-- kubectl
-- helm
 
-A fantastic way to install different clis is provided by [arkade](https://github.com/alexellis/arkade), a tool created by Alex Ellis.
+- _kubectl_
+- _helm_
+
+A fantastic way to install different clis is provided by [arkade](https://github.com/alexellis/arkade), a tool created by Alex Ellis, the founder of [OpenFaas](https://www.openfaas.com/).
 To install `arkade` simply run:
 
 ```console
@@ -43,8 +46,8 @@ The easiest way to install k3s is to run the following command:
 curl -sfL https://get.k3s.io | sh -
 ```
 
-This will create your master node, setup a systemctl service, create a kubectl configuration file and some shell scripts that can be used to stop it and/or uninstall it.
-Nevertheless, this simple setup also deploys the default ingress controller (traefik), but since I decided to go with nginx, it is possible to change the setup command in:
+This will create your master node, setup a `systemd` service, create a kubectl configuration file and some shell scripts that can be used to stop it and/or uninstall it.
+Nevertheless, this simple setup also deploys the default ingress controller (_Traefik_), but since I decided to go with _nginx_, it is possible to change the setup command in:
 
 ```console
 curl -sfL https://get.k3s.io | sh -s - --no-deploy traefik
@@ -73,14 +76,14 @@ raspberrypi    Ready    master   12s   v1.19.5+k3s2
 
 The Nginx ingress controller provides a way to manage the incoming traffic using nginx as a reverse proxy.
 
-To install the ingress controller the best reference to follow is available at the official website[^1], in particular I will follow the helm approach described [here](https://kubernetes.github.io/ingress-nginx/deploy/#using-helm).
+To install the ingress controller the best reference to follow is available at the official website, in particular I will follow the helm approach described [here](https://kubernetes.github.io/ingress-nginx/deploy/#using-helm).
 
 The documentation describes some peculiarities of the bare metal setup that I suggest to read [here](https://kubernetes.github.io/ingress-nginx/deploy/baremetal/); the main points are related to:
 
 - having a service for the controller of type __NodePort__ instead of __LoadBalancer__ (usually automatically provided by the cloud provider for managed clusters like AKS, EKS, ...)
-- making sure that the nginx controller is only deployed on a single node (the one that will be exposed to the internet traffic through the router port forwarding)
+- making sure that the _nginx_ controller is only deployed on a single node (the one that will be exposed to the internet traffic through the router port forwarding)
 
-To ensure the second point first of all we need to tag the node in such a way that it will be the selected by the kubernetes scheduler for the nginx controller pods. Assuming a name `raspberrypi` for the node (which coincide with the hostname), then you can execute the following command:
+To ensure the second point first of all we need to tag the node in such a way that it will be the selected by the kubernetes scheduler for the _nginx_ controller pods. Assuming a name `raspberrypi` for the node (which coincide with the hostname), then you can execute the following command:
 
 ```console
 kubectl label nodes raspberrypi external-exposed=true
@@ -121,7 +124,7 @@ helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx -f ingress-cust
 
 The approach with explicit `--set`values doesn't work because of the way the selector for the node gets written.
 
-With this set of values the ingress controller will be deployed on the kubernetes cluster, the controller pods will be scheduled on the node labeled with `external-exposed=true`, will be exposed with a service of type NodePort on the ports 30080 (http) and 30443 (https), will preserve the source IP thanks to the `externalTrafficPolicy` and will have a default backend with a dedicated arm image (the default backend image is not multi architecture, a specific tag is required) for all the requests that do not match any ingress definition.
+With this set of values the ingress controller will be deployed on the kubernetes cluster, the controller pods will be scheduled on the node labeled with `external-exposed=true`, will be exposed with a service of type __NodePort__ on the ports 30080 (http) and 30443 (https), will preserve the source IP thanks to the `externalTrafficPolicy` and will have a default backend with a dedicated arm image (the default backend image is not multi architecture, a specific tag is required) for all the requests that do not match any ingress definition.
 
 To check the availability of the ingress controller you should see something similar to:
 
@@ -149,6 +152,11 @@ The same is also true for https requests on the port 30443 (now we need to accep
 
 ## Install cert manager
 
+Cert manager is a tool that simplifies the operations required to generate a tls certificate for a specific domain name. Clearly you need to have a domain name first, and for this you have some options/possibilities:
+
+- if your ISP provider gives you a static ip you can register a domain name and bind it to your ip
+- if you don't have a static ip, you can rely on a dynamic DNS service[^ddns]: most modern modems give you the possibility to automatically update the DNS resolution at every ip change (these services often offer a free plan to be manually renewed every month)
+
 The cert manager setup is done directly following the approach suggested in the official [documentation](https://cert-manager.io/docs/).
 
 First we need a dedicated namespace:
@@ -171,42 +179,59 @@ helm upgrade --install cert-manager jetstack/cert-manager \
 	--namespace cert-manager \
 	--version v1.1.0 \
 	--set installCRDs=true
+	--wait
 ```
 
-To be able to generate ACME certificates with _Let's Encrypt_, we need to have a ClusterIssuer (or issuer, the difference is that an Issuer is bound to a namespace) resource on the cluster:
+> the `--wait` option helps having the resources ready for the following steps
+
+To be able to generate ACME certificates with _Let's Encrypt_, we need to have a __ClusterIssuer__ (or issuer, the difference is that an Issuer is bound to a namespace) resource on the cluster (see full documentation [here](https://cert-manager.io/docs/concepts/issuer/)).
+
+_Let's Encrypt_ offers, together with the production apis to request certificates (based on HTTP01 or DNS challenges) also staging apis to validate the workflow without having to worry too much about aggressive rate limits.
+
+To simplify the delivery of both _Let's Encrypt_ __ClusterIssuers__ and additional certificate request resources (see [here](https://cert-manager.io/docs/usage/certificate/)), you can deploy the two provided helm charts:
+
+- `letsencrypt-cluster-issuers`:
+
+  ```console
+  helm upgrade --install letsencrypt-cluster-issuers ./letsencrypt-cluster-issuers \
+    --set email=<email used for ACME registration> \
+    --wait
+  ```
+
+  
+
+- certificate-request:
+
+  ```console
+  helm upgrade --install certificate-request certificate-request \
+    --set tls.hostname=<DNS name for which you request a certificate> \
+    --set clusterIssuer.type=<prod|stag letsencrypt issuer> \
+    --set tls.secret.prefix=<prefix for the secret that will store the generated certificate> \
+    --wait
+  ```
+
+These last steps will create both the staging and production __ClusterIssuers__ for _Lest's Encrypt_, together with the certificate request for the DNS name associated to the public ip of your cluster.
+
+This setup is based on an HTTP-01 challenge (entirely managed by cert manager), but you need to ensure that you cluster can be reached using the dns on the standard port 80 (see the _Let's Encrypt_ [documentation](https://letsencrypt.org/docs/challenge-types/#http-01-challenge))
+
+## Wrapping everything up
+
+All the instructions described here can be executed launching the `setup-master.sh` script:
 
 ```console
-apiVersion: cert-manager.io/v1alpha2
-kind: ClusterIssuer
-metadata:
-  name: letsencrypt-prod
-spec:
-  acme:
-    # The ACME server URL
-    server: https://acme-v02.api.letsencrypt.org/directory
-    # Email address used for ACME registration
-    email: fabiolune@gmail.com
-    # Name of a secret used to store the ACME account private key
-    privateKeySecretRef:
-      name: letsencrypt-prod
-    # Enable the HTTP-01 challenge provider
-    solvers:
-    - http01:
-        ingress:
-          class: nginx
+./setup-master.sh \
+  -e <your email for certificate requests> \
+  -n <your domain name> \
+  -p prod
 ```
 
-These steps can be simplified using the attached helm chart; in particular you need to define the hostname for which you require the certificate, the secret where the resulting certificate will be saved and the email for the certificate request:
+> the `-p` option refers to the prod or stag _Let's Encrypt_ issuer
 
-```console
-helm upgrade --install cert-manager-resources ./cert-manager-resources \
-    --set tls.hostname=<your.domain.name> \
-    --set tls.secret.prefix=<prefix-for-secret-name> \
-    --set clusterIssuer.type=prod
-```
+## Further readings
 
-If `clusterIssuer.type` is not specified, or in general is different from `prod`, the staging _Let's Encrypt_ cluster issuer will be used (it's a good practice to use it until you are sure that the final certificate gets actually created because the staging instance has higher rate limits)
-
+- <https://blog.alexellis.io/test-drive-k3s-on-raspberry-pi/>
+- <https://dev.to/sr229/how-to-use-nginx-ingress-controller-in-k3s-2ck2>
+- <https://opensource.com/article/20/3/ssl-letsencrypt-k3s>
 
 
 
@@ -214,4 +239,7 @@ If `clusterIssuer.type` is not specified, or in general is different from `prod`
 
 ---
 
-[^1]:https://kubernetes.github.io/ingress-nginx/deploy
+__References__
+
+[^ddns]: <https://en.wikipedia.org/wiki/Dynamic_DNS>
+
