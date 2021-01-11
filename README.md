@@ -7,9 +7,8 @@ The idea of this repo is to try to collect all the aspects of a decent kubernete
 
 ## What
 
-This repo contains a minimum set of components to have a kubernetes cluster up & running on a raspberry pi(s).
+This repo contains instructions for the setup of a kubernetes cluster on a raspberry pi(s) based on:
 
-The setup is based on:
 - [k3s](https://k3s.io/): a lightweight kubernetes distribution
 - [nginx ingress controller](https://kubernetes.github.io/ingress-nginx/)
 - [cert-manager](https://cert-manager.io/) to manage tls certificates generation
