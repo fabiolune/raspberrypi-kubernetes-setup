@@ -155,7 +155,7 @@ The same is also true for https requests on the port 30443 (now we need to accep
 Cert manager is a tool that simplifies the operations required to generate a tls certificate for a specific domain name. Clearly you need to have a domain name first, and for this you have some options/possibilities:
 
 - if your ISP provider gives you a static ip you can register a domain name and bind it to your ip
-- if you don't have a static ip, you can rely on a dynamic DNS service[^1]: most modern modems give you the possibility to automatically update the DNS resolution at every ip change (these services often offer a free plan to be manually renewed every month)
+- if you don't have a static ip, you can rely on a dynamic DNS service (see [here](https://en.wikipedia.org/wiki/Dynamic_DNS) for further details): most modern modems give you the possibility to automatically update the DNS resolution at every ip change (these services often offer a free plan to be manually renewed every month)
 
 The cert manager setup is done directly following the approach suggested in the official [documentation](https://cert-manager.io/docs/).
 
@@ -230,14 +230,3 @@ All the instructions described here can be executed launching the `setup-master.
 - <https://blog.alexellis.io/test-drive-k3s-on-raspberry-pi/>
 - <https://dev.to/sr229/how-to-use-nginx-ingress-controller-in-k3s-2ck2>
 - <https://opensource.com/article/20/3/ssl-letsencrypt-k3s>
-
-
-
-
-
----
-
-__References__
-
-[^1]: <https://en.wikipedia.org/wiki/Dynamic_DNS>
-
