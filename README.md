@@ -95,18 +95,31 @@ helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm repo update
 ```
 
-Now you are ready to install the helm chart with the following command:
+Now you are ready to install the helm chart with this set of additional values:
 
 ```console
-helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx \
-	--set controller.nodeSelector.external-exposed="true" \
-	--set controller.service.type=NodePort \
-	--set controller.service.nodePorts.http=30080 \
-	--set controller.service.nodePorts.https=30443 \
-	--set controller.service.externalTrafficPolicy=Local \
-	--set defaultBackend.enabled=true \
-	--set defaultBackend.image.repository=k8s.gcr.io/defaultbackend-arm
+controller:
+  nodeSelector:
+    external-exposed: "true"
+  service:
+    nodePorts:
+      http: 30080
+      https: 30443
+    type: NodePort
+    externalTrafficPolicy: Local
+defaultBackend:
+  enabled: true
+  image:
+    repository: k8s.gcr.io/defaultbackend-arm
 ```
+
+The command to run (assuming the above file is called `ingress.custom-values.yaml`) is simply:
+
+```console
+helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx -f ingress-custom-values.yaml
+```
+
+The approach with explicit `--set`values doesn't work because of the way the selector for the node gets written.
 
 With this set of values the ingress controller will be deployed on the kubernetes cluster, the controller pods will be scheduled on the node labeled with `external-exposed=true`, will be exposed with a service of type NodePort on the ports 30080 (http) and 30443 (https), will preserve the source IP thanks to the `externalTrafficPolicy` and will have a default backend with a dedicated arm image (the default backend image is not multi architecture, a specific tag is required) for all the requests that do not match any ingress definition.
 

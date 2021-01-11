@@ -1,11 +1,6 @@
-namespace: cert-manager
-
 clusterIssuer:
   # type can be prod or stg; any other value will fallback to stag
   type: stag
-acme:
-  # email address for the name registration: will also receive notifications about problems and certificates expiration
-  email: ""
 tls:
   hostname: ""
   secret:

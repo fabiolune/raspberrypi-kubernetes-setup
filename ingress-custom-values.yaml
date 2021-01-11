@@ -1,0 +1,17 @@
+controller:
+  nodeSelector:
+    external-exposed: "true"
+  config:
+        log-format-upstream: '{ "@timestamp": "$time_iso8601", "source-ip": "$realip_remote_addr", "bytes-sent": $bytes_sent, "request-time": $request_time, "statu
+s": $status, "vhost": "$host", "namespace": "$namespace", "service": "$service_name", "ingress": "$ingress_name", "method": "$request_method", "url": "$uri", "elap
+sed": "$upstream_response_time", "user-agent": "$http_user_agent" }'
+  service:
+    nodePorts:
+      http: 30080
+      https: 30443
+    type: NodePort
+    externalTrafficPolicy: Local
+defaultBackend:
+  enabled: true
+  image:
+    repository: k8s.gcr.io/defaultbackend-arm
