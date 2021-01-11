@@ -30,13 +30,13 @@ To install `arkade` simply run:
 curl -sLS https://dl.get-arkade.dev | sudo sh
 ```
 
-When arkade setup is done, to install kubectl and helm you simply need to run:
+When _arkade_ setup is done, to install _kubectl_ and _helm_ you simply need to run:
 
 ```console
 ark get kubectl
 ark get helm
 ```
-> ark is a handy alias of arkade
+> ark is a handy alias of _arkade_ 
 
 ## Setting up k3s
 
@@ -90,7 +90,7 @@ kubectl label nodes raspberrypi external-exposed=true
 
 Now we can move on with the ingress controller setup.
 
-The first step is to add the nginx helm repo and update helm:
+The first step is to add the _nginx_ helm repo and update helm:
 
 ```console
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
@@ -223,6 +223,44 @@ All the instructions described here can be executed launching the `setup-master.
 ```
 
 > the `-p` option refers to the prod or stag _Let's Encrypt_ issuer
+
+## Setup a worker node
+
+What has been described so far is the setup of a kubernetes cluster consisting of only 1 master node. _k3s_ offers an easy way to add an additional worker node to the cluster, still based on the same installer.
+
+First of all we need to retrieve the token created for the master node: this can be found by simply running, on the master node:
+
+```console
+sudo cat /var/lib/rancher/k3s/server/node-token
+```
+
+This token will allow the worker node to join the cluster thanks to the command (to be executed on the worker node):
+
+```console
+curl -sfL https://get.k3s.io | K3S_URL=<url of the cluster> K3S_TOKEN=<node token obtained from master node> sh -s -
+```
+
+By default, all the raspberry pis have the same hostname (`raspberrypi`), and this can generate some confusion during the setup: you can follow one of these approaches:
+
+- change the hostname of the worker node; the best approach in my opinion because it also allows for better identification of the pi in your network
+- use the `--node-name`option for k3s setup
+- use the `--with-node-id`option for k3s setup
+
+When the worker setup is complete, from the master node it is possible to verify that the worker node has been added with
+
+```console
+$ kubectl get node -o wide
+
+NAME           STATUS   ROLES    AGE    VERSION
+raspberrypi    Ready    master   151m   v1.19.5+k3s2
+raspberrypi2   Ready    <none>   42s    v1.19.5+k3s2
+```
+
+In some k3s versions the role of the worker node is not defined ("<none>"); to fix that it is possible to run:
+
+```console
+kubectl label node {name of the worker node} node-role.kubernetes.io/worker=worker
+```
 
 ## Further readings
 
