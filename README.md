@@ -177,7 +177,7 @@ Finally we can deploy it:
 helm upgrade --install cert-manager jetstack/cert-manager \
 	--namespace cert-manager \
 	--version v1.1.0 \
-	--set installCRDs=true
+	--set installCRDs=true \
 	--wait
 ```
 
